@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hangfire.CarbonAwareExecution\Hangfire.CarbonAwareExecution.csproj" />
+    <ProjectReference Include="..\..\Source\Hangfire.CarbonAwareExecution\Hangfire.CarbonAwareExecution.csproj" />
   </ItemGroup>
 
 </Project>

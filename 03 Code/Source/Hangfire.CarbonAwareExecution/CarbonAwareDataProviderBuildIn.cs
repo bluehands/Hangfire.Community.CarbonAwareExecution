@@ -47,18 +47,18 @@ public abstract class CarbonAwareDataProviderCachedData<T> : CarbonAwareDataProv
         return services;
     }
 
-    public override async Task<DateTimeOffset> CalculateBestExecutionTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
+    public override async Task<(bool ForecastIsAvailable,DateTimeOffset BestExecutionTime)> CalculateBestExecutionTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
         var handler = Services.GetService<IForecastHandler>();
         if (handler == null)
         {
-            return DateTimeOffset.Now;
+            return (false,DateTimeOffset.Now);
         }
 
         var adjustedForecastBoundary = await TryAdjustForecastBoundary(earliestExecutionTime, latestExecutionTime - estimatedJobDuration);
         if (!adjustedForecastBoundary.ForecastIsAvailable)
         {
-            return DateTimeOffset.Now;
+            return (false,DateTimeOffset.Now);
         }
 
         var lastStartTime = adjustedForecastBoundary.LastStartTime;
@@ -67,10 +67,10 @@ public abstract class CarbonAwareDataProviderCachedData<T> : CarbonAwareDataProv
         var best = forecast.First().OptimalDataPoints.FirstOrDefault();
         if (best == null)
         {
-            return DateTimeOffset.Now;
+            return (false,DateTimeOffset.Now);
         }
 
-        return best.Time;
+        return (true, best.Time);
     }
 
     protected abstract Task<DataBoundary> GetDataBoundary(ComputingLocation computingLocation);
