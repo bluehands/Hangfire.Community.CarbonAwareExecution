@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PackageId>Hangfire.CarbonAwareExecution</PackageId>
+		<Version>1.0.0-beta</Version>
+		<Authors>bluehands</Authors>
+		<Company></Company>
+		<PackageTags>bluehands</PackageTags>
+		<Title>Execute Hangfire tasks with carbon awareness in mind.</Title>
+		<RepositoryUrl>https://github.com/bluehands/Hangfire.CarbonAwareExecution.git</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>
+			A Hangfire Extension to schedule tasks on a point in time with minimal grid carbon intensity.
+			The extension uses the Green Software Foundation Carbon Aware SDK to calculate best execution time. For the emission forecast open data is used.
+		</Description>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\..\README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="GSF.CarbonAware.Unofficial" Version="1.0.2-beta" />
+		<PackageReference Include="Hangfire.Core" Version="1.7.33" />
+	</ItemGroup>
+
+</Project>
