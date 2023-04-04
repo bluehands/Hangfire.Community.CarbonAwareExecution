@@ -1,4 +1,4 @@
-namespace SampleUsage
+namespace Usage
 {
     public class JobExecutionForecast
     {

@@ -1,8 +1,10 @@
+using CarbonAware.Model;
+using CarbonAwareComputing.ExecutionForecast;
 using Hangfire;
 using Hangfire.CarbonAwareExecution;
 using Hangfire.SqlServer;
 
-namespace SampleUsage
+namespace Usage
 {
     public class Program
     {

@@ -1,6 +1,8 @@
 ﻿using Hangfire.Annotations;
 using Hangfire.States;
 using System.Linq.Expressions;
+using CarbonAwareComputing.ExecutionForecast;
+
 // ReSharper disable UnusedMember.Global
 
 namespace Hangfire.CarbonAwareExecution;
@@ -21,11 +23,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> EnqueueWithCarbonAwarenessAsync(this IBackgroundJobClient client, Expression<Action> methodCall, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(latestExecutionTime, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Enqueue(methodCall);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Enqueue(methodCall), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
 
     /// <summary>
@@ -42,11 +40,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> EnqueueWithCarbonAwarenessAsync(this IBackgroundJobClient client, Expression<Func<Task>> methodCall, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(latestExecutionTime, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Enqueue(methodCall);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Enqueue(methodCall), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
 
     /// <summary>
@@ -64,11 +58,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> EnqueueWithCarbonAwarenessAsync<T>(this IBackgroundJobClient client, Expression<Action<T>> methodCall, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(latestExecutionTime, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Enqueue(methodCall);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Enqueue(methodCall), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
 
     /// <summary>
@@ -86,11 +76,10 @@ public static class BackgroundJobClientExtension
     public static async Task<string> EnqueueWithCarbonAwarenessAsync<T>(this IBackgroundJobClient client, Expression<Func<T, Task>> methodCall, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(latestExecutionTime, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Enqueue(methodCall);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(
+            _ => client.Enqueue(methodCall),
+            bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime)
+        );
     }
 
     /// <summary>
@@ -107,11 +96,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync(this IBackgroundJobClient client, Expression<Action> methodCall, TimeSpan delay, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(DateTimeOffset.Now - earliestDelay, DateTimeOffset.Now + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, delay);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Schedule(methodCall, delay), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
     /// <summary>
     /// Creates a new background job based on a specified lambda expression
@@ -127,11 +112,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync(this IBackgroundJobClient client, Expression<Func<Task>> methodCall, TimeSpan delay, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(DateTimeOffset.Now - earliestDelay, DateTimeOffset.Now + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, delay);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Schedule(methodCall, delay), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
     /// <summary>
     /// Creates a new background job based on a specified lambda expression
@@ -147,11 +128,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync(this IBackgroundJobClient client, Expression<Action> methodCall, DateTimeOffset enqueueAt, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(enqueueAt - earliestDelay, enqueueAt + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, enqueueAt);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Schedule(methodCall, enqueueAt), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
 
     /// <summary>
@@ -168,11 +145,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync(this IBackgroundJobClient client, Expression<Func<Task>> methodCall, DateTimeOffset enqueueAt, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(enqueueAt - earliestDelay, enqueueAt + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, enqueueAt);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Schedule(methodCall, enqueueAt), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
 
     /// <summary>
@@ -190,11 +163,7 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync<T>(this IBackgroundJobClient client, Expression<Action<T>> methodCall, TimeSpan delay, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(DateTimeOffset.Now - earliestDelay, DateTimeOffset.Now + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, delay);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(_ => client.Schedule(methodCall, delay), bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime));
     }
 
     /// <summary>
@@ -212,11 +181,11 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync<T>(this IBackgroundJobClient client, Expression<Func<T, Task>> methodCall, TimeSpan delay, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(DateTimeOffset.Now - earliestDelay, DateTimeOffset.Now + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, delay);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(
+            _ => client.Schedule(methodCall, delay),
+            bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime)
+        );
+
     }
 
     /// <summary>
@@ -234,11 +203,10 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync<T>(this IBackgroundJobClient client, Expression<Action<T>> methodCall, DateTimeOffset enqueueAt, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(enqueueAt - earliestDelay, enqueueAt + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, enqueueAt);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(
+            _ => client.Schedule(methodCall, enqueueAt),
+            bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime)
+        );
     }
 
     /// <summary>
@@ -256,14 +224,13 @@ public static class BackgroundJobClientExtension
     public static async Task<string> ScheduleWithCarbonAwarenessAsync<T>(this IBackgroundJobClient client, Expression<Func<T, Task>> methodCall, DateTimeOffset enqueueAt, TimeSpan earliestDelay, TimeSpan latestDelay, TimeSpan estimatedJobDuration)
     {
         var scheduleOptions = await GetBestScheduleTime(enqueueAt - earliestDelay, enqueueAt + latestDelay, estimatedJobDuration);
-        if (!scheduleOptions.HasForecast)
-        {
-            return client.Schedule(methodCall, enqueueAt);
-        }
-        return client.Schedule(methodCall, scheduleOptions.BestScheduleTime);
+        return scheduleOptions.Match(
+            _ => client.Schedule(methodCall, enqueueAt),
+            bestExecutionTime => client.Schedule(methodCall, bestExecutionTime.ExecutionTime)
+        );
     }
 
-    private static async Task<(bool HasForecast, DateTimeOffset BestScheduleTime)> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
+    private static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
         try
         {
@@ -271,18 +238,18 @@ public static class BackgroundJobClientExtension
             var options = filter?.Instance as CarbonAwareOptions;
             if (options == null)
             {
-                return (false, DateTimeOffset.Now);
+                return ExecutionTime.NoForecast;
             }
 
             var provider = options.DataProvider;
-            return  await provider.CalculateBestExecutionTime(earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
+            return await provider.CalculateBestExecutionTime(earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return (false, DateTimeOffset.Now);
+            return ExecutionTime.NoForecast;
         }
     }
-    private static async Task<(bool HasForecast, DateTimeOffset BestScheduleTime)> GetBestScheduleTime(DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
+    private static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     => await GetBestScheduleTime(DateTimeOffset.Now, latestExecutionTime, estimatedJobDuration);
 }

@@ -2,7 +2,7 @@ using Hangfire;
 using Hangfire.CarbonAwareExecution;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SampleUsage.Controllers
+namespace Usage.Controllers
 {
     [ApiController]
     [Route("[controller]")]

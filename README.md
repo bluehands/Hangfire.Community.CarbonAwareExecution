@@ -48,6 +48,10 @@ await m_BackgroundJobs.ScheduleWithCarbonAwarenessAsync(
 
 ```
 
+## Extensibility
+
+For custom forecasts or scenarios you don't want the build in provider add a own data provider. You may extend the abstract base class *CarbonAwareDataProvider* or use the *CarbonAwareDataProviderWithCustomForecast*.
+
 ## Methodology
 
 **Hangfire.CarbonAwareExecution Extension** make use of the [Carbon Aware SDK](https://github.com/Green-Software-Foundation/carbon-aware-sdk) a [Green Software Foundation](https://greensoftware.foundation/) Project. There are some extensions to the SDK to use cached offline data sources in our [fork](https://github.com/bluehands/carbon-aware-sdk).
