@@ -242,7 +242,8 @@ public static class BackgroundJobClientExtension
             }
 
             var provider = options.DataProvider;
-            return await provider.CalculateBestExecutionTime(earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
+            var location = options.ComputingLocation;
+            return await provider.CalculateBestExecutionTime(location, earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
         }
         catch (Exception ex)
         {

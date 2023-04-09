@@ -23,7 +23,7 @@
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="CarbonAwareComputing.ExecutionForecast" Version="1.0.1-beta" />
+		<PackageReference Include="CarbonAwareComputing.ExecutionForecast" Version="1.0.3" />
 		<PackageReference Include="Hangfire.Core" Version="1.7.33" />
 	</ItemGroup>
 
