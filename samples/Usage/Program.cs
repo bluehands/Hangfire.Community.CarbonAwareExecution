@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using CarbonAware.Model;
 using CarbonAwareComputing.ExecutionForecast;
 using Hangfire;
@@ -13,11 +14,17 @@ namespace Usage
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            string password="";
+            string userName="";
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseCarbonAwareExecution(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
+                //.UseCarbonAwareExecution(
+                //    () => new CarbonAwareExecutionOptions(
+                //        new CarbonAwareDataProviderWattTime(userName, password), 
+                //        ComputingLocations.Germany))
                 .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection"), new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),

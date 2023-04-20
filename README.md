@@ -48,6 +48,19 @@ await m_BackgroundJobs.ScheduleWithCarbonAwarenessAsync(
 
 ```
 
+## Fallback
+
+If your computing location is outside Europe or you need other forecasts the WattTime data provider may be useful. You need a valid WattTime account to use the data provider.
+
+``` csharp
+builder.Services.AddHangfire(configuration => configuration
+    .UseCarbonAwareExecution(
+        () => new CarbonAwareExecutionOptions(
+            new CarbonAwareDataProviderWattTime(userName, password), 
+            ComputingLocations.Germany))
+);
+```
+
 ## Extensibility
 
 For custom forecasts or scenarios you don't want the build in provider add a own data provider. You may extend the abstract base class *CarbonAwareDataProvider* or use the *CarbonAwareDataProviderWithCustomForecast*.
