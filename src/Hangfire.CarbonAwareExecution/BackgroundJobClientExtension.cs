@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 using CarbonAwareComputing.ExecutionForecast;
-using Hangfire.CarbonAwareExecution;
+using CarbonAwareComputing.Hangfire;
 
 // ReSharper disable UnusedMember.Global
 

@@ -1,4 +1,4 @@
-# Hangfire.CarbonAwareExecution Extension
+# Carbon Aware Computing Hangfire Extension
 
 ## Overview
 
@@ -6,10 +6,10 @@ A [Hangfire](https://www.hangfire.io/) extension to schedule tasks with **carbon
 
 ## Installation
 
-HangfireCarbonAwareExecution is available as a NuGet package. You can install it using the NuGet Package Console window:
+CarbonAwareComputing.Hangfire is available as a NuGet package. You can install it using the NuGet Package Console window:
 
 ``` powershell
-Install-Package Hangfire.CarbonAwareExecution
+Install-Package CarbonAwareComputing.Hangfire
 ```
 
 After installation add the extension to the Hangfire configuration.

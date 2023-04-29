@@ -1,6 +1,6 @@
-﻿using Hangfire;
+﻿using CarbonAwareComputing.Hangfire;
+using Hangfire;
 using Hangfire.Annotations;
-using Hangfire.CarbonAwareExecution;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Server;

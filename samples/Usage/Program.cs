@@ -2,7 +2,6 @@ using System.Reflection.Metadata.Ecma335;
 using CarbonAware.Model;
 using CarbonAwareComputing.ExecutionForecast;
 using Hangfire;
-using Hangfire.CarbonAwareExecution;
 using Hangfire.SqlServer;
 
 namespace Usage

@@ -1,7 +1,7 @@
 ﻿using CarbonAwareComputing.ExecutionForecast;
 using Hangfire.Client;
 
-namespace Hangfire.CarbonAwareExecution;
+namespace CarbonAwareComputing.Hangfire;
 
 internal class CarbonAwareOptions : IClientFilter
 {

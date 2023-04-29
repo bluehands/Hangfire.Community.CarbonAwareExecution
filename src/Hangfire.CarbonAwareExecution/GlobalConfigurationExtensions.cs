@@ -1,5 +1,5 @@
 ﻿using CarbonAwareComputing.ExecutionForecast;
-using Hangfire.CarbonAwareExecution;
+using CarbonAwareComputing.Hangfire;
 using Hangfire.Client;
 // ReSharper disable UnusedMember.Global
 

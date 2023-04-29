@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Hangfire;
 
-namespace Hangfire.CarbonAwareExecution;
+namespace CarbonAwareComputing.Hangfire;
 
 internal class RecurringJobExecutionWindowSerializer
 {

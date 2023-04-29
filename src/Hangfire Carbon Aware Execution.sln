@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Usage", "..\samples\Usage\Usage.csproj", "{DFB8006A-3317-4EFC-9343-FB38BD85078F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.CarbonAwareExecution", "Hangfire.CarbonAwareExecution\Hangfire.CarbonAwareExecution.csproj", "{76D9EA8D-F663-4C60-9C2E-823298DC1821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonAwareComputing.Hangfire", "Hangfire.CarbonAwareExecution\CarbonAwareComputing.Hangfire.csproj", "{76D9EA8D-F663-4C60-9C2E-823298DC1821}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
