@@ -6,11 +6,12 @@
 		<Nullable>enable</Nullable>
 		<PackageId>CarbonAwareComputing.Hangfire</PackageId>
 		<Version>1.0.0</Version>
-		<Authors>bluehands</Authors>
-		<Company></Company>
-		<PackageTags>bluehands</PackageTags>
+		<PackageTags>Hangfire, Carbon Aware, Green Software, Forecast</PackageTags>
+		<Authors>Implemented with 💙 by bluehands</Authors>
+		<Company>bluehands GmbH &amp; Co.mmunication KG</Company>
 		<Title>Execute Hangfire tasks with carbon awareness in mind.</Title>
 		<RepositoryUrl>https://github.com/bluehands/Hangfire.CarbonAwareExecution.git</RepositoryUrl>
+		<PackageProjectUrl>https://www.carbon-aware-computing.com/</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>
 			A Hangfire Extension to schedule tasks on a point in time with minimal grid carbon intensity.
