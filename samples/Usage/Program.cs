@@ -16,11 +16,11 @@ namespace Usage
             // Add services to the container.
             string password="";
             string userName="";
-            builder.Services.AddHangfire(configuration => configuration
+            builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UseCarbonAwareExecution(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
+                .UseCarbonAwareDataProvider(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
                 //.UseCarbonAwareExecution(
                 //    () => new CarbonAwareExecutionOptions(
                 //        new CarbonAwareDataProviderWattTime(userName, password), 

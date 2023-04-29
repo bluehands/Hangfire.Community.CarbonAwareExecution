@@ -1,11 +1,11 @@
-﻿using Hangfire.Annotations;
-using Hangfire.States;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using CarbonAwareComputing.ExecutionForecast;
+using Hangfire.CarbonAwareExecution;
 
 // ReSharper disable UnusedMember.Global
 
-namespace Hangfire.CarbonAwareExecution;
+// ReSharper disable once CheckNamespace
+namespace Hangfire;
 
 public static class BackgroundJobClientExtension
 {
@@ -232,24 +232,7 @@ public static class BackgroundJobClientExtension
 
     private static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
-        try
-        {
-            var filter = GlobalJobFilters.Filters.FirstOrDefault(f => f.Instance is CarbonAwareOptions);
-            var options = filter?.Instance as CarbonAwareOptions;
-            if (options == null)
-            {
-                return ExecutionTime.NoForecast;
-            }
-
-            var provider = options.DataProvider;
-            var location = options.ComputingLocation;
-            return await provider.CalculateBestExecutionTime(location, earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return ExecutionTime.NoForecast;
-        }
+        return await CarbonAwareExecutionForecast.GetBestScheduleTime(earliestExecutionTime, latestExecutionTime, estimatedJobDuration);
     }
     private static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     => await GetBestScheduleTime(DateTimeOffset.Now, latestExecutionTime, estimatedJobDuration);

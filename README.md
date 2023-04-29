@@ -15,7 +15,7 @@ Install-Package Hangfire.CarbonAwareExecution
 After installation add the extension to the Hangfire configuration.
 
 ``` csharp
-builder.Services.AddHangfire(configuration => configuration
+builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
     .UseCarbonAwareExecution(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
 );
 ```
@@ -29,10 +29,18 @@ There are extension to **Enqueue** and **Schedule** with *WithCarbonAwarenessAsy
 Setup the latest execution time and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is enqueued immediately.
 
 ``` csharp
-await BackgroundJobs.EnqueueWithCarbonAwarenessAsync(
-    () => Console.WriteLine("Hello world from Hangfire!. Enqueue carbon aware jobs"),
+//use the extension methods
+IBackgroundJobClient client = GetBackgroundJobClient();
+await client.EnqueueWithCarbonAwarenessAsync(
+    () => Console.WriteLine("Enqueue carbon aware jobs"),
     DateTimeOffset.Now + TimeSpan.FromHours(2),
     TimeSpan.FromMinutes(5));
+
+//or use the static versions
+await CarbonAwareBackgroundJob.EnqueueAsync(
+    () => Console.WriteLine("Enqueue carbon aware jobs"),
+    DateTimeOffset.Now + TimeSpan.FromHours(2),
+    TimeSpan.FromMinutes(5));    
 ```
 
 ### Delayed tasks
@@ -40,25 +48,57 @@ await BackgroundJobs.EnqueueWithCarbonAwarenessAsync(
 Setup the earliest and latest execution time and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is scheduled as desired.
 
 ``` csharp
-await m_BackgroundJobs.ScheduleWithCarbonAwarenessAsync(
-    () => Console.WriteLine("Hello world from Hangfire!. Schedule carbon aware jobs"),
+//use the extension methods
+IBackgroundJobClient client = GetBackgroundJobClient();
+await client.ScheduleWithCarbonAwarenessAsync(
+    () => Console.WriteLine("Schedule carbon aware jobs"),
     DateTimeOffset.Now + TimeSpan.FromHours(2),
     TimeSpan.FromMinutes(20),
     TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(5));
 
+//or use the static versions
+await CarbonAwareBackgroundJob.ScheduleAsync(
+        () => Console.WriteLine("Schedule carbon aware jobs"),
+        DateTimeOffset.Now + TimeSpan.FromHours(2),
+        TimeSpan.FromMinutes(20),
+        TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(5));
 ```
+
+### Recurring tasks
+
+Setup the maximum execution delay after planned schedule time and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is scheduled as desired.
+
+``` csharp
+//use the extension methods
+IRecurringJobManager manager = GetRecurringJobManager();
+manager.AddOrUpdateCarbonAware(
+    "daily", 
+    () => Console.WriteLine("Hello, world!"), 
+    Cron.Daily, 
+    TimeSpan.FromHours(2),
+    TimeSpan.FromMinutes(20));
+
+//or use the static versions
+CarbonAwareRecurringJob.AddOrUpdate(
+    "daily", 
+    () => Console.WriteLine("Hello, world!"), 
+    Cron.Daily, TimeSpan.FromHours(2), 
+    TimeSpan.FromMinutes(20));
+```
+
+The Hangfire Carbon Aware Extension will prevent the execution of the current instance of the recurring job. It is calculation a execution window with minimal carbon impact and the schedule that task. In the dashboard you will see the notice that the job was executed and a newly planned task.
 
 ## Fallback
 
 If your computing location is outside Europe or you need other forecasts the WattTime data provider may be useful. You need a valid WattTime account to use the data provider.
 
 ``` csharp
-builder.Services.AddHangfire(configuration => configuration
+builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
     .UseCarbonAwareExecution(
         () => new CarbonAwareExecutionOptions(
             new CarbonAwareDataProviderWattTime(userName, password), 
             ComputingLocations.Germany))
-);
+        );
 ```
 
 ## Extensibility
