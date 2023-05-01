@@ -14,10 +14,10 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v1
     - name: Build
-      run: dotnet build -c Release
+      run: dotnet build "./src/Hangfire Carbon Aware Execution.sln" -c Release
     - name: Test
-      run: dotnet test -c Release --no-build
+      run: dotnet test "./src/Hangfire Carbon Aware Execution.sln" -c Release --no-build
     - name: Pack nugets
-      run: dotnet pack -c Release --no-build --output .
+      run: dotnet pack "./src/Hangfire Carbon Aware Execution.sln" -c Release --no-build --output .
     - name: Push to NuGet
       run: dotnet nuget push "*.nupkg" --api-key ${{secrets.nuget_api_key}} --source https://api.nuget.org/v3/index.json
