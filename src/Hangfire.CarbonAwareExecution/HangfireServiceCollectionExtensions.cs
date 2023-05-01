@@ -1,8 +1,8 @@
-﻿using CarbonAwareComputing.Hangfire;
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Community.CarbonAwareExecution;
 using Hangfire.Server;
 using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;

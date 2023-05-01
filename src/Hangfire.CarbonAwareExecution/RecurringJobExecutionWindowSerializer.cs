@@ -1,6 +1,4 @@
-﻿using Hangfire;
-
-namespace CarbonAwareComputing.Hangfire;
+﻿namespace Hangfire.Community.CarbonAwareExecution;
 
 internal class RecurringJobExecutionWindowSerializer
 {

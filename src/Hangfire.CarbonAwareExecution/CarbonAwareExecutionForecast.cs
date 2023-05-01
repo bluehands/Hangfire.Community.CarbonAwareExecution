@@ -1,7 +1,6 @@
 ﻿using CarbonAwareComputing.ExecutionForecast;
-using Hangfire;
 
-namespace CarbonAwareComputing.Hangfire;
+namespace Hangfire.Community.CarbonAwareExecution;
 
 public class CarbonAwareExecutionForecast
 {

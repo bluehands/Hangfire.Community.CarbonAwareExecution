@@ -1,6 +1,7 @@
 ﻿using CarbonAwareComputing.ExecutionForecast;
-using CarbonAwareComputing.Hangfire;
 using Hangfire.Client;
+using Hangfire.Community.CarbonAwareExecution;
+
 // ReSharper disable UnusedMember.Global
 
 // ReSharper disable once CheckNamespace

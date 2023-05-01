@@ -1,10 +1,9 @@
 ﻿using CarbonAwareComputing.ExecutionForecast;
-using Hangfire;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
 
-namespace CarbonAwareComputing.Hangfire;
+namespace Hangfire.Community.CarbonAwareExecution;
 
 internal class RescheduleWithCarbonAwarenessStateMachine : IStateMachine
 {

@@ -4,13 +4,13 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<PackageId>CarbonAwareComputing.Hangfire</PackageId>
+		<PackageId>Hangfire.Community.CarbonAwareExecution</PackageId>
 		<Version>1.0.0</Version>
 		<PackageTags>Hangfire, Carbon Aware, Green Software, Forecast</PackageTags>
 		<Authors>Implemented with 💙 by bluehands</Authors>
 		<Company>bluehands GmbH &amp; Co.mmunication KG</Company>
 		<Title>Execute Hangfire tasks with carbon awareness in mind.</Title>
-		<RepositoryUrl>https://github.com/bluehands/Hangfire.CarbonAwareExecution.git</RepositoryUrl>
+		<RepositoryUrl>https://github.com/bluehands/Hangfire.Community.CarbonAwareExecution.git</RepositoryUrl>
 		<PackageProjectUrl>https://www.carbon-aware-computing.com/</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>

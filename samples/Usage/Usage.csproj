@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Hangfire.CarbonAwareExecution\CarbonAwareComputing.Hangfire.csproj" />
+    <ProjectReference Include="..\..\src\Hangfire.CarbonAwareExecution\Hangfire.Community.CarbonAwareExecution.csproj" />
   </ItemGroup>
 
 </Project>
