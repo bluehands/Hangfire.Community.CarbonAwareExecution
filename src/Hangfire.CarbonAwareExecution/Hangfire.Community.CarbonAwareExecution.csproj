@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<PackageId>Hangfire.Community.CarbonAwareExecution</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<PackageTags>Hangfire, Carbon Aware, Green Software, Forecast</PackageTags>
 		<Authors>Implemented with 💙 by bluehands</Authors>
 		<Company>bluehands GmbH &amp; Co.mmunication KG</Company>
@@ -18,6 +18,7 @@
 			The extension uses the Green Software Foundation Carbon Aware SDK to calculate best execution time. For the emission forecast open data is used.
 		</Description>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<EnablePackageValidation>true</EnablePackageValidation>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -31,6 +32,10 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="CarbonAwareComputing.ExecutionForecast" Version="1.1.1" />
+		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Hangfire" Version="1.8.0" />
 		<PackageReference Include="Hangfire.Core" Version="1.8.0" />
 	</ItemGroup>

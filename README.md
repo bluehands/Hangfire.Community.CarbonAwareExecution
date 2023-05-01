@@ -6,13 +6,13 @@ A [Hangfire](https://www.hangfire.io/) extension to schedule tasks with **carbon
 
 ## Installation
 
-CarbonAwareComputing.Hangfire is available as a NuGet package. You can install it using the NuGet Package Console window:
+Hangfire.Community.CarbonAwareExecution is available as a NuGet package. You can install it using the NuGet Package Console window:
 
 ``` powershell
-Install-Package CarbonAwareComputing.Hangfire
+Install-Package Hangfire.Community.CarbonAwareExecution
 ```
 
-After installation add the extension to the Hangfire configuration.
+After installation add the extension to the Hangfire configuration. It extends the *AddHangfire*-Extension to add additional dependencies.
 
 ``` csharp
 builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
@@ -107,7 +107,7 @@ For custom forecasts or scenarios you don't want the build in provider add a own
 
 ## Methodology
 
-**Hangfire.CarbonAwareExecution Extension** make use of the [Carbon Aware SDK](https://github.com/Green-Software-Foundation/carbon-aware-sdk) a [Green Software Foundation](https://greensoftware.foundation/) Project. There are some extensions to the SDK to use cached offline data sources in our [fork](https://github.com/bluehands/carbon-aware-sdk).
+**Hangfire.Community.CarbonAwareExecution Extension** make use of the [Carbon Aware SDK](https://github.com/Green-Software-Foundation/carbon-aware-sdk) a [Green Software Foundation](https://greensoftware.foundation/) Project. There are some extensions to the SDK to use cached offline data sources in our [fork](https://github.com/bluehands/carbon-aware-sdk).
 
 The emission forecast data are uploaded periodically to a Azure Blob Storage for a given grid region and are public (e.g. for Germany <https://carbonawarecomputing.blob.core.windows.net/forecasts/de.json>).
 
