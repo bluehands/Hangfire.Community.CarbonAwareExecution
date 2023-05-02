@@ -103,7 +103,7 @@ builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
 
 ## Extensibility
 
-For custom forecasts or scenarios you don't want the build in provider add a own data provider. You may extend the abstract base class *CarbonAwareDataProvider* or use the *CarbonAwareDataProviderWithCustomForecast*.
+For custom forecasts or scenarios you don't want the build in provider add a own data provider. You may extend the abstract base class *CarbonAwareDataProvider* or use the *CarbonAwareDataProviderWithCustomForecast*. A WattTime data provider is implemented as well.
 
 ## Methodology
 
@@ -111,8 +111,10 @@ For custom forecasts or scenarios you don't want the build in provider add a own
 
 The emission forecast data are uploaded periodically to a Azure Blob Storage for a given grid region and are public (e.g. for Germany <https://carbonawarecomputing.blob.core.windows.net/forecasts/de.json>).
 
-For every grid region a data provider is needed:
+To avoid unnecessary processing only a few grid regions are active. Currently de, fr, at, ch
 
 * **Germany**: The API from <https://www.energy-charts.info/> are used. The data is the share of renewable energy to the total power production. The origin data source is from [entso-e](https://www.entsoe.eu/). The data is generated every day at 19:00+02 for the next day. After 19:00+02 the maximum forecast is next day 24:00+02.
 
-Other data sources and regions are added soon.
+We will provide data for the european grid regions. Please send a mail to am@bluehands.de if you need for one of the inactive regions.
+
+For forecasts outside of europe you may use the WattTime provider with an active account.
