@@ -113,6 +113,10 @@ The emission forecast data are uploaded periodically to a Azure Blob Storage for
 
 For every grid region a data provider is needed:
 
-* **Germany**: The API from <https://www.energy-charts.info/> are used. The data is the share of renewable energy to the total power production. The origin data source is from [entso-e](https://www.entsoe.eu/). The data is generated every day at 19:00+02 for the next day. After 19:00+02 the maximum forecast is next day 24:00+02.
+* **Europe (without UK)**: The API from <https://www.energy-charts.info/> are used. The data is the share of renewable energy to the total power production. The origin data source is from [entso-e](https://www.entsoe.eu/). The data is generated every day at 19:00+01 for the next day. After 19:00+01 the maximum forecast is next day 24:00+01.
+
+* **United Kingdom**: The API from <https://carbonintensity.org.uk/> are used. The data is the carbon intensity. The data is generated periodically .
+
+
 
 Other data sources and regions are added soon.
