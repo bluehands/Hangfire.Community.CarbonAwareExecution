@@ -1,6 +1,6 @@
 using System.Reflection.Metadata.Ecma335;
 using CarbonAware.Model;
-using CarbonAwareComputing.ExecutionForecast;
+using CarbonAwareComputing;
 using Hangfire;
 using Hangfire.SqlServer;
 

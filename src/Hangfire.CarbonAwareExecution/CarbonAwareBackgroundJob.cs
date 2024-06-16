@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using CarbonAwareComputing.ExecutionForecast;
+using CarbonAwareComputing;
 using Hangfire.Annotations;
 using Hangfire.Community.CarbonAwareExecution;
 

@@ -1,4 +1,4 @@
-﻿using CarbonAwareComputing.ExecutionForecast;
+﻿using CarbonAwareComputing;
 using Hangfire.Client;
 
 namespace Hangfire.Community.CarbonAwareExecution;
