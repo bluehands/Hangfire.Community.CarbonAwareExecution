@@ -58,3 +58,9 @@ internal class RecurringJobExecutionWindowSerializer
 }
 
 internal record CarbonAwareForecastParameter(string JobId, TimeSpan MaxExecutionDelay, TimeSpan EstimatedJobDuration);
+
+public sealed record CarbonAwareDelayParameter(TimeSpan MaxExecutionDelay, TimeSpan EstimatedJobDuration)
+{
+    public string? ParentRecurringJobId { get; set; }
+    public string JobUniqueId { get; set; } = Guid.NewGuid().ToString("N");
+}
