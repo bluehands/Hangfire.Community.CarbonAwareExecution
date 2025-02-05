@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/samples/Usage/Hangfire.db
+/samples/Usage/Hangfire.db-shm
+/samples/Usage/Hangfire.db-wal

@@ -16,7 +16,9 @@ namespace Usage
             // Add services to the container.
             string password="";
             string userName="";
-            builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
+            builder.Services
+                //.AddHangfireCarbonAwareExecution(configuration => configuration
+                .AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
