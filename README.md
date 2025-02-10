@@ -15,53 +15,65 @@ Install-Package Hangfire.Community.CarbonAwareExecution
 After installation add the extension to the Hangfire configuration. It extends the *AddHangfire*-Extension to add additional dependencies.
 
 ``` csharp
-builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
-    .UseCarbonAwareDataProvider(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
+builder.Services.AddHangfire(configuration => configuration
+    .UseCarbonAwareExecution(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
 );
 ```
 
 ## Usage
 
-There are extension to **Enqueue** and **Schedule** with *WithCarbonAwarenessAsync*.
+To enable carbon awareness for a specific job, add a CarbonAwareExecution parameter to the method called by hangfire. The parameter defines the maximum acceptable delay for the job. Pass null to disable carbon aware shifting. 
+This works for all kind of hangfire jobs, namly fire and forget, scheduled and recurring jobs. See [JobController](https://github.com/bluehands/Hangfire.Community.CarbonAwareExecution/blob/main/samples/Usage/Controllers/JobsController.cs) for more examples.
+
+``` csharp
+public static class HangfireActions
+{
+    public static void CarbonAwareJob(/*your functional parameters*/ CarbonAwareExecution? carbonAware) => ...;
+}
+```
 
 ### Fire and Forget tasks
 
-Setup the latest execution time and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is enqueued immediately.
+Setup maximum delay and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is enqueued immediately.
 
 ``` csharp
 //use the extension methods
 IBackgroundJobClient client = GetBackgroundJobClient();
-await client.EnqueueWithCarbonAwarenessAsync(
-    () => Console.WriteLine("Enqueue carbon aware jobs"),
-    DateTimeOffset.Now + TimeSpan.FromHours(2),
-    TimeSpan.FromMinutes(5));
+client.Enqueue(
+    () => HangfireActions.CarbonAwareJob(
+        "Hello world from Hangfire!. Enqueue carbon aware jobs.",
+        new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+));
 
 //or use the static versions
-await CarbonAwareBackgroundJob.EnqueueAsync(
-    () => Console.WriteLine("Enqueue carbon aware jobs"),
-    DateTimeOffset.Now + TimeSpan.FromHours(2),
-    TimeSpan.FromMinutes(5));    
+BackgroundJob.Enqueue(
+    () => HangfireActions.CarbonAwareJob(
+        "Hello world from Hangfire!. Enqueue carbon aware jobs.",
+        new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+));    
 ```
 
 ### Delayed tasks
 
-Setup the earliest and latest execution time and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is scheduled as desired.
+Setup the earliest execution time, the maximum delay and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is scheduled as desired.
 
 ``` csharp
 //use the extension methods
 IBackgroundJobClient client = GetBackgroundJobClient();
-await client.ScheduleWithCarbonAwarenessAsync(
-    () => Console.WriteLine("Schedule carbon aware jobs"),
-    DateTimeOffset.Now + TimeSpan.FromHours(2),
-    TimeSpan.FromMinutes(20),
-    TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(5));
+client.Schedule(
+    () => HangfireActions.CarbonAwareJob(
+            "Hello world from Hangfire!. Schedule carbon aware jobs",
+            new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+        TimeSpan.FromMinutes(20)
+);
 
 //or use the static versions
-await CarbonAwareBackgroundJob.ScheduleAsync(
-        () => Console.WriteLine("Schedule carbon aware jobs"),
-        DateTimeOffset.Now + TimeSpan.FromHours(2),
-        TimeSpan.FromMinutes(20),
-        TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(5));
+BackgroudJob.Schedule(
+    () => HangfireActions.CarbonAwareJob(
+            "Hello world from Hangfire!. Schedule carbon aware jobs",
+            new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+        TimeSpan.FromMinutes(20)
+);
 ```
 
 ### Recurring tasks
@@ -71,19 +83,20 @@ Setup the maximum execution delay after planned schedule time and the estimated 
 ``` csharp
 //use the extension methods
 IRecurringJobManager manager = GetRecurringJobManager();
-manager.AddOrUpdateCarbonAware(
-    "daily", 
-    () => Console.WriteLine("Hello, world!"), 
-    Cron.Daily, 
-    TimeSpan.FromHours(2),
-    TimeSpan.FromMinutes(20));
+manager.AddOrUpdate(
+    "daily",
+    () => HangfireActions.CarbonAwareJobAsync("Hello world from Hangfire!. Recurring carbon aware jobs",
+        new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5))),
+    "2 0 * * *"
+);
 
 //or use the static versions
-CarbonAwareRecurringJob.AddOrUpdate(
-    "daily", 
-    () => Console.WriteLine("Hello, world!"), 
-    Cron.Daily, TimeSpan.FromHours(2), 
-    TimeSpan.FromMinutes(20));
+RecurringJob.AddOrUpdate(
+    "daily",
+    () => HangfireActions.CarbonAwareJobAsync("Hello world from Hangfire!. Recurring carbon aware jobs",
+        new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5))),
+    "2 0 * * *"
+);
 ```
 
 The Hangfire Carbon Aware Extension will prevent the execution of the current instance of the recurring job. It is calculation a execution window with minimal carbon impact and the schedule that task. In the dashboard you will see the notice that the job was executed and a newly planned task.
@@ -93,7 +106,7 @@ The Hangfire Carbon Aware Extension will prevent the execution of the current in
 If your computing location is outside Europe or you need other forecasts the WattTime data provider may be useful. You need a valid WattTime account to use the data provider.
 
 ``` csharp
-builder.Services.AddHangfireCarbonAwareExecution(configuration => configuration
+builder.Services.AddHangfire(configuration => configuration
     .UseCarbonAwareExecution(
         () => new CarbonAwareExecutionOptions(
             new CarbonAwareDataProviderWattTime(userName, password), 
@@ -107,7 +120,7 @@ For custom forecasts or scenarios you don't want the build in provider add a own
 
 ## Methodology
 
-**Hangfire.Community.CarbonAwareExecution Extension** make use of the [Carbon Aware SDK](https://github.com/Green-Software-Foundation/carbon-aware-sdk) a [Green Software Foundation](https://greensoftware.foundation/) Project. There are some extensions to the SDK to use cached offline data sources in our [fork](https://github.com/bluehands/carbon-aware-sdk).
+**Hangfire.Community.CarbonAwareExecution Extension** makes use of the [Carbon Aware SDK](https://github.com/Green-Software-Foundation/carbon-aware-sdk) a [Green Software Foundation](https://greensoftware.foundation/) Project. There are some extensions to the SDK to use cached offline data sources in our [fork](https://github.com/bluehands/carbon-aware-sdk).
 
 The emission forecast data are uploaded periodically to a Azure Blob Storage for a given grid region and are public (e.g. for Germany <https://carbonawarecomputing.blob.core.windows.net/forecasts/de.json>).
 
@@ -122,3 +135,5 @@ To avoid unnecessary processing only a few grid regions are active. Currently de
 We will provide data for the european grid regions. Please send a mail to am@bluehands.de if you need for one of the inactive regions.
 
 For forecasts outside of europe you may use the WattTime provider with an active account.
+
+To shift job executions in Hangfire an `IElectStateFilter` is used to calculate the delay at enqueue time and reschedule the background job once if it was not rescheduled before. Use can actually use the [`ShiftJobFilter<TParameter>`](https://github.com/bluehands/Hangfire.Community.CarbonAwareExecution/blob/main/src/Hangfire.CarbonAwareExecution/ShiftJobFilter.cs) filter to implement custom shifting logic in a very simple way.

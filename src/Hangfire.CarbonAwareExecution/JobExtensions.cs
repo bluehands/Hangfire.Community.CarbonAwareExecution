@@ -7,30 +7,31 @@ namespace Hangfire.Community.CarbonAwareExecution;
 [UnionType]
 internal abstract partial record GetJobResult
 {
-    public record Job_(Job HangfireJob) : GetJobResult;
-    public record Error_() : GetJobResult;
-    public record NotFound_() : GetJobResult;
+    public record Job_(InvocationData InvocationData, string? Cron, string? TimeZone) : GetJobResult;
+    public record Error_(string? Cron, string? TimeZone) : GetJobResult;
+    public record NotFound_ : GetJobResult;
 }
 
 internal static class JobExtensions
 {
-    public static CarbonAwareDelayParameter? GetCarbonAwareDelayParameter(this Job job) => job.Args.OfType<CarbonAwareDelayParameter>().FirstOrDefault();
-    public static string? GetRecurringJobId(this BackgroundJob backgroundJob) => backgroundJob.ParametersSnapshot.TryGetValue("RecurringJobId", out var recurringJobId) ? recurringJobId.Trim('\"') : null;
-    public static GetJobResult TryGetRecurringJob(this IStorageConnection connection, string recurringJobId)
+    public static T? GetArgument<T>(this Job job) => job.Args.OfType<T>().FirstOrDefault();
+    public static GetJobResult GetRecurringJob(this IStorageConnection connection, string recurringJobId)
     {
-        var parentJobEntry = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
-        if (parentJobEntry == null || !parentJobEntry.TryGetValue("Job", out var payload) || string.IsNullOrWhiteSpace(payload))
+        var recurringJobEntry = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
+        if (recurringJobEntry == null || !recurringJobEntry.TryGetValue("Job", out var payload) || string.IsNullOrWhiteSpace(payload))
             return GetJobResult.NotFound();
+
+        var cron = recurringJobEntry.GetValueOrDefault("Cron");
+        var timeZoneId = recurringJobEntry.GetValueOrDefault("TimeZoneId");
 
         try
         {
             var invocationData = InvocationData.DeserializePayload(payload);
-            var job = invocationData.DeserializeJob();
-            return GetJobResult.Job(job);
+            return GetJobResult.Job(invocationData, cron, timeZoneId);
         }
         catch (Exception)
         {
-            return GetJobResult.Error();
+            return GetJobResult.Error(cron, timeZoneId);
         }
     }
 }
