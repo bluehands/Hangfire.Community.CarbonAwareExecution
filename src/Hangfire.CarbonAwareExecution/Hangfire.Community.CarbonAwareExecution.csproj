@@ -1,11 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+	<PropertyGroup>
 		<PackageId>Hangfire.Community.CarbonAwareExecution</PackageId>
-		<Version>2.0.0</Version>
+		<VersionSuffixLocal />
+		<!--When variable is set we are building a prerelease package-->
+		<VersionSuffixLocal Condition="'$(IsPreRelease)'!='' AND '$(IsPreRelease)'">
+			$(VersionSuffix)
+		</VersionSuffixLocal>
+
+		<!--#region adapt versions here-->
+		<MajorVersion>2</MajorVersion>
+		<MinorAndPatchVersion>0.0</MinorAndPatchVersion>
+		<!--#endregion-->
+
+		<AssemblyVersion>$(MajorVersion).0.0</AssemblyVersion>
+		<Version>$(MajorVersion).$(MinorAndPatchVersion)</Version>
+		<FileVersion>$(Version)</FileVersion>
+		<PackageVersion>$(Version)$(VersionSuffixLocal)</PackageVersion>
 		<PackageTags>Hangfire, Carbon Aware, Green Software, Forecast</PackageTags>
 		<Authors>Implemented with 💙 by bluehands</Authors>
 		<Company>bluehands GmbH &amp; Co.mmunication KG</Company>
@@ -17,7 +33,7 @@
 			A Hangfire Extension to schedule tasks on a point in time with minimal grid carbon intensity.
 			The extension uses the Green Software Foundation Carbon Aware SDK to calculate best execution time. For the emission forecast open data is used.
 		</Description>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<EnablePackageValidation>true</EnablePackageValidation>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
@@ -26,7 +42,6 @@
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<!-- Include symbol files (*.pdb) in the built .nupkg -->
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
@@ -34,12 +49,12 @@
 	<ItemGroup>
 		<PackageReference Include="CarbonAwareComputing" Version="2.0.2" />
 		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="FunicularSwitch.Generators" Version="4.2.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Hangfire" Version="1.8.14" />
 		<PackageReference Include="Hangfire.Core" Version="1.8.14" />
