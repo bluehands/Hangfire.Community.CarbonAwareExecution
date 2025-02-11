@@ -31,8 +31,7 @@ steps:
     cacheHitVar: 'CACHE_RESTORED'
 
 - task: NuGetCommand@2
-  displayName: 'NuGet restore'
-  condition: ne(variables.CACHE_RESTORED, true)
+  displayName: 'NuGet restore'  
   inputs:
     restoreSolution: '$(solution)'
 
