@@ -21,8 +21,8 @@ internal static class JobExtensions
         if (recurringJobEntry == null || !recurringJobEntry.TryGetValue("Job", out var payload) || string.IsNullOrWhiteSpace(payload))
             return GetJobResult.NotFound();
 
-        var cron = recurringJobEntry.GetValueOrDefault("Cron");
-        var timeZoneId = recurringJobEntry.GetValueOrDefault("TimeZoneId");
+        var cron = recurringJobEntry.TryGetValue("Cron", out var c) ? c : null;
+        var timeZoneId = recurringJobEntry.TryGetValue("TimeZoneId", out var t) ? t : null;
 
         try
         {
