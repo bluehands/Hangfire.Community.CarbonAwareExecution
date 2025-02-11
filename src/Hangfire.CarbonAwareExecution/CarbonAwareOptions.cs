@@ -16,11 +16,9 @@ internal class CarbonAwareOptions : IClientFilter
 
     public void OnCreating(CreatingContext filterContext)
     {
-
     }
 
     public void OnCreated(CreatedContext filterContext)
     {
-
     }
 }

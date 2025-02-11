@@ -1,63 +1,131 @@
 using Hangfire;
+using Hangfire.Common;
+using Hangfire.Community.CarbonAwareExecution;
 using Microsoft.AspNetCore.Mvc;
+using static Hangfire.Community.CarbonAwareExecution.CarbonAwareExecution;
 
 namespace Usage.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class JobsController : ControllerBase
+    public class JobsController(IBackgroundJobClient backgroundJobs, IRecurringJobManager recurringJobs)
+        : ControllerBase
     {
-        private readonly ILogger<JobsController> m_Logger;
-        private readonly IBackgroundJobClient m_BackgroundJobs;
-        private readonly IRecurringJobManager m_RecurringJobs;
-
-        public JobsController(ILogger<JobsController> logger, IBackgroundJobClient backgroundJobs, IRecurringJobManager recurringJobs)
-        {
-            m_Logger = logger;
-            m_BackgroundJobs = backgroundJobs;
-            m_RecurringJobs = recurringJobs;
-        }
-
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public IActionResult Get()
         {
+            backgroundJobs.Enqueue(
+                () => HangfireActions.CarbonAwareJob(
+                    "Hello world from Hangfire! Enqueue carbon aware jobs.",
+                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+                ));
 
-            m_RecurringJobs.AddOrUpdateCarbonAware("daily", () => Console.WriteLine("Hello, world!"), Cron.Daily, TimeSpan.FromHours(2),TimeSpan.FromMinutes(20));
-            
-            CarbonAwareRecurringJob.AddOrUpdate(
-                "daily", 
-                () => Console.WriteLine("Hello, world!"), 
-                Cron.Daily, TimeSpan.FromHours(2), 
+            backgroundJobs.Enqueue(
+                () => HangfireActions.MyJob(
+                    "Hello world from Hangfire! Enqueue carbon aware jobs",
+                    ShiftCarbonAware(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+                ));
+
+            BackgroundJob.Schedule(
+                () => HangfireActions.CarbonAwareJob(
+                    "Hello world from Hangfire! Schedule carbon aware jobs",
+                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
                 TimeSpan.FromMinutes(20));
 
+            var earliestExecutionTime = DateTimeOffset.Now + TimeSpan.FromHours(1);
+            backgroundJobs.Schedule(
+                () => HangfireActions.MyJob(
+                    "Hello world from Hangfire! Schedule carbon aware jobs",
+                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+                earliestExecutionTime);
 
-            await m_BackgroundJobs.EnqueueWithCarbonAwarenessAsync(
-                () => Console.WriteLine("Hello world from Hangfire!. Enqueue carbon aware jobs"),
-                DateTimeOffset.Now + TimeSpan.FromHours(2),
-                TimeSpan.FromMinutes(5));
-            
-            await CarbonAwareBackgroundJob.EnqueueAsync(
-                () => Console.WriteLine("Hello world from Hangfire!. Enqueue carbon aware jobs"),
-                DateTimeOffset.Now + TimeSpan.FromHours(2),
-                TimeSpan.FromMinutes(5));
-
-            await m_BackgroundJobs.ScheduleWithCarbonAwarenessAsync(
-                () => Console.WriteLine("Hello world from Hangfire!. Schedule carbon aware jobs"),
-                DateTimeOffset.Now + TimeSpan.FromHours(2),
-                TimeSpan.FromMinutes(20),
-                TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(5));
-
-            await CarbonAwareBackgroundJob.ScheduleAsync(
-                () => Console.WriteLine("Hello world from Hangfire!. Schedule carbon aware jobs"),
-                DateTimeOffset.Now + TimeSpan.FromHours(2),
-                TimeSpan.FromMinutes(20),
-                TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(5));
+            //every night between 2 and 5 am
+            RecurringJob.AddOrUpdate(
+                "CarbonAwareJob",
+                () => HangfireActions.MyJob("Hello world from Hangfire! Recurring carbon aware jobs",
+                    new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5))),
+                "2 0 * * *"
+            );
             return Ok();
         }
 
-        public void DoJob()
+        [Route("[action]")]
+        [HttpPost]
+        public IActionResult AddOrUpdatedRecurringJobCarbonAware(string jobId, string cronExpression,
+            int maxExecutionDelayHours, int estimatedJobDurationMinutes, string queue = "default")
         {
-            Console.WriteLine("Transparent!");
+            var maxExecutionDelay = TimeSpan.FromHours(maxExecutionDelayHours);
+            var estimatedJobDuration = TimeSpan.FromMinutes(estimatedJobDurationMinutes);
+
+            var job = Job.FromExpression(() => HangfireActions.MyJob(
+                "Recurring job with potential carbon delay",
+                new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)
+            ), queue);
+
+            recurringJobs.AddOrUpdate(jobId, job, cronExpression);
+
+            return Ok();
         }
+
+        [Route("[action]")]
+        [HttpPost]
+        public IActionResult AddOrUpdatedRecurringJob(string jobId, string cronExpression)
+        {
+            recurringJobs.AddOrUpdate(jobId, () => HangfireActions.MyJob("Recurring job with carbon aware delay", null), cronExpression);
+            return Ok();
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public IActionResult ScheduleJobCarbonAware(string? minDelayTimeSpan, int maxExecutionDelayHours, int estimatedJobDurationMinutes)
+        {
+            var delay = minDelayTimeSpan != null ? TimeSpan.Parse(minDelayTimeSpan) : TimeSpan.Zero;
+
+            var latestDelay = TimeSpan.FromHours(maxExecutionDelayHours);
+            var estimatedJobDuration = TimeSpan.FromMinutes(estimatedJobDurationMinutes);
+            var scheduledJobId = backgroundJobs
+                .Schedule(() => HangfireActions.MyJob("Scheduled job with carbon aware delay", new CarbonAwareExecution(latestDelay, estimatedJobDuration)), delay);
+
+            return Ok(scheduledJobId);
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public IActionResult ScheduleJob(string? delayTimeSpan)
+        {
+            var delay = delayTimeSpan != null ? TimeSpan.Parse(delayTimeSpan) : TimeSpan.Zero;
+            var scheduledJobId = backgroundJobs.Schedule(() => HangfireActions.MyJob("Scheduled job without carbon aware delay", null), delay);
+            return Ok(scheduledJobId);
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public IActionResult EnqueueJobCarbonAware(int maxExecutionDelayHours, int estimatedJobDurationMinutes)
+        {
+            var maxExecutionDelay = TimeSpan.FromHours(maxExecutionDelayHours);
+            var estimatedJobDuration = TimeSpan.FromMinutes(estimatedJobDurationMinutes);
+            var jobId = backgroundJobs.Enqueue(() => HangfireActions.MyJob("Enqueued job with carbon aware delay", new(maxExecutionDelay, estimatedJobDuration)));
+            return Ok(jobId);
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public IActionResult EnqueueJob()
+        {
+            var jobId = backgroundJobs.Enqueue(() => HangfireActions.MyJob("Enqueued job without carbon aware delay", null));
+            return Ok(jobId);
+        }
+    }
+
+    public static class HangfireActions
+    {
+        // ReSharper disable UnusedParameter.Global
+        public static void CarbonAwareJob(string info, CarbonAwareExecution? carbonDelay) => Console.WriteLine(info);
+        public static async Task MyJob(string info, CarbonAwareExecution? carbonDelay)
+        {
+            await Task.Delay(100);
+            Console.WriteLine(info);
+        }
+        // ReSharper restore UnusedParameter.Global
     }
 }
