@@ -5,7 +5,9 @@ namespace Hangfire.Community.CarbonAwareExecution;
 
 public sealed record ShiftedScheduleDate(DateTimeOffset Date, string? Reason);
 
-public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> getShiftedScheduleDate) : IElectStateFilter
+public class ShiftJobFilter<TParameter>(
+    Func<TParameter, Action<string>, ShiftedScheduleDate?> getShiftedScheduleDate,
+    Action<string> logError) : IElectStateFilter
 {
     const string ShiftParameterName = "__Shift";
 
@@ -38,7 +40,7 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> g
             if (shiftParameter == null) //not yet shifted -> calculate shift and reschedule
             {
                 var now = DateTimeOffset.Now;
-                var delayedScheduleTime = getShiftedScheduleDate(delayParameter);
+                var delayedScheduleTime = getShiftedScheduleDate(delayParameter, logError);
 
                 if (delayedScheduleTime != null)
                 {

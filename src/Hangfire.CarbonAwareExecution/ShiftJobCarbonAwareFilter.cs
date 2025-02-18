@@ -2,14 +2,14 @@
 
 namespace Hangfire.Community.CarbonAwareExecution;
 
-public class ShiftJobCarbonAwareFilter() : ShiftJobFilter<CarbonAwareExecution>(GetUpdatedScheduleDate)
+public class ShiftJobCarbonAwareFilter(Action<string> logError) : ShiftJobFilter<CarbonAwareExecution>(GetUpdatedScheduleDate, logError)
 {
-    static ShiftedScheduleDate? GetUpdatedScheduleDate(CarbonAwareExecution execution)
+    static ShiftedScheduleDate? GetUpdatedScheduleDate(CarbonAwareExecution execution, Action<string> logError)
     {
         var now = DateTimeOffset.Now;
 
         return CarbonAwareExecutionForecast
-            .GetBestScheduleTime(now, now.Add(execution.MaxExecutionDelay), execution.EstimatedJobDuration)
+            .GetBestScheduleTime(now, now.Add(execution.MaxExecutionDelay), execution.EstimatedJobDuration, logError)
             .GetAwaiter().GetResult()
             .Match(
                 noForecast: _ => null,

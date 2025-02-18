@@ -5,7 +5,11 @@ namespace Hangfire.Community.CarbonAwareExecution;
 
 public class CarbonAwareExecutionForecast
 {
-    public static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
+    public static Task<ExecutionTime> GetBestScheduleTime(
+        DateTimeOffset earliestExecutionTime,
+        DateTimeOffset latestExecutionTime,
+        TimeSpan estimatedJobDuration,
+        Action<string> logError)
     {
         try
         {
@@ -13,17 +17,17 @@ public class CarbonAwareExecutionForecast
             var options = filter?.Instance as CarbonAwareOptions;
             if (options == null)
             {
-                return ExecutionTime.NoForecast;
+                return Task.FromResult(ExecutionTime.NoForecast);
             }
 
             var provider = options.DataProvider;
             var location = options.ComputingLocation;
-            return await provider.CalculateBestExecutionTime(location, earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
+            return provider.CalculateBestExecutionTime(location, earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
-            return ExecutionTime.NoForecast;
+            logError?.Invoke(ex.Message);
+            return Task.FromResult(ExecutionTime.NoForecast);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Usage
                         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                         .UseSimpleAssemblyNameTypeSerializer()
                         .UseRecommendedSerializerSettings()
-                        .UseCarbonAwareExecution(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany)
+                        .UseCarbonAwareExecution(new CarbonAwareDataProviderOpenData(), ComputingLocations.Germany, Console.WriteLine)
                         //.UseCarbonAwareExecution(
                         //    () => new CarbonAwareExecutionOptions(
                         //        new CarbonAwareDataProviderWattTime(userName, password), 
