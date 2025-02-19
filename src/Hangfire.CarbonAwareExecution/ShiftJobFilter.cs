@@ -1,11 +1,13 @@
-﻿using Hangfire.States;
+﻿using Hangfire.Community.CarbonAwareExecution.Internal;
+using Hangfire.States;
 using Hangfire.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire.Community.CarbonAwareExecution;
 
 public sealed record ShiftedScheduleDate(DateTimeOffset Date, string? Reason);
 
-public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> getShiftedScheduleDate) : IElectStateFilter
+public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : IElectStateFilter
 {
     const string ShiftParameterName = "__Shift";
 
@@ -20,6 +22,8 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> g
         var delayParameter = context.BackgroundJob.Job.GetArgument<TParameter>();
         if (delayParameter != null)
         {
+            logger.LogDebug(() => $"Found {delayParameter.GetType().Name} argument on job '{context.BackgroundJob.Id}: {delayParameter}'");
+
             var shiftParameter = context.GetJobParameter<ShiftParameterValue>(ShiftParameterName);
             var recurringJobId = context.GetJobParameter<string>("RecurringJobId", true);
             if (recurringJobId != null)
@@ -29,6 +33,7 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> g
                     var parentJobDeletedOrChanged = ParentJobDeletedOrChanged(context, recurringJobId, shiftParameter);
                     if (parentJobDeletedOrChanged)
                     {
+                        logger.LogDebug(() => $"Job state of job '{context.BackgroundJob.Id}' to deleted because parent recurring job '{recurringJobId}' was changed or removed after rescheduling.");
                         context.CandidateState = new DeletedState();
                         return;
                     }
@@ -56,6 +61,7 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> g
                     }
 
                     var scheduleTo = delayedScheduleTime.Date;
+                    logger.LogDebug(() => $"Shifting job '{context.BackgroundJob.Id}' to new schedule date: {scheduleTo}.");
                     context.SetJobParameter(ShiftParameterName,
                         new ShiftParameterValue(
                             Shift: $@"{(scheduleTo - now):hh\:mm\:ss}{(delayedScheduleTime.Reason != null ? $" - {delayedScheduleTime.Reason}" : "")}",
@@ -94,10 +100,4 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, ShiftedScheduleDate?> g
             );
         return parentJobDeletedOrChanged;
     }
-}
-
-internal static class DateExtensions
-{
-    public static DateTimeOffset CropSeconds(this DateTimeOffset date) => 
-        new(date.Year, date.Month, date.Day, date.Hour, date.Minute, 0, date.Offset);
 }
