@@ -1,29 +1,37 @@
 ﻿
 using CarbonAwareComputing;
+using Hangfire.Community.CarbonAwareExecution.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire.Community.CarbonAwareExecution;
 
-public class CarbonAwareExecutionForecast
+public static class CarbonAwareExecutionForecast
 {
-    public static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
+    public static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration, ILogger? logger = null)
     {
+        var filter = GlobalJobFilters.Filters.FirstOrDefault(f => f.Instance is CarbonAwareOptions);
+        if (filter?.Instance is not CarbonAwareOptions options)
+        {
+            return ExecutionTime.NoForecast;
+        }
+
+        var provider = options.DataProvider.Invoke();
+        var location = options.ComputingLocation;
         try
         {
-            var filter = GlobalJobFilters.Filters.FirstOrDefault(f => f.Instance is CarbonAwareOptions);
-            var options = filter?.Instance as CarbonAwareOptions;
-            if (options == null)
-            {
-                return ExecutionTime.NoForecast;
-            }
+            var bestExecutionTime = await provider.DataProvider.CalculateBestExecutionTime(location,
+                earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
+            return bestExecutionTime;
 
-            var provider = options.DataProvider;
-            var location = options.ComputingLocation;
-            return await provider.CalculateBestExecutionTime(location, earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            logger?.LogWarning(ex, $"Failed to get forecast for location {location}");
             return ExecutionTime.NoForecast;
+        }
+        finally
+        {
+            provider.Scope?.Dispose();
         }
     }
 }
