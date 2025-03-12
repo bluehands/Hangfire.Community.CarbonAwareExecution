@@ -5,28 +5,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Hangfire.Community.CarbonAwareExecution;
 
-public static class CarbonAwareExecutionForecast
+public static class CarbonAwareExecutionForecastExtensions
 {
-    public static async Task<ExecutionTime> GetBestScheduleTime(DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration, ILogger? logger = null)
+    internal static async Task<ExecutionTime> GetBestScheduleTime(this CarbonAwareServices services, ComputingLocation location, DateTimeOffset earliestExecutionTime, DateTimeOffset latestExecutionTime, TimeSpan estimatedJobDuration)
     {
-        var filter = GlobalJobFilters.Filters.FirstOrDefault(f => f.Instance is CarbonAwareOptions);
-        if (filter?.Instance is not CarbonAwareOptions options)
-        {
-            return ExecutionTime.NoForecast;
-        }
-
-        var provider = options.DataProvider.Invoke();
-        var location = options.ComputingLocation;
+        var provider = services.DataProvider.Invoke();
         try
         {
             var bestExecutionTime = await provider.DataProvider.CalculateBestExecutionTime(location,
                 earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
             return bestExecutionTime;
-
         }
         catch (Exception ex)
         {
-            logger?.LogWarning(ex, $"Failed to get forecast for location {location}");
+            services.Logger?.LogWarning(ex, $"Failed to get forecast for location {location}");
             return ExecutionTime.NoForecast;
         }
         finally

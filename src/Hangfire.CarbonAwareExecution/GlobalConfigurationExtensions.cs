@@ -15,10 +15,9 @@ namespace Hangfire
             ComputingLocation location,
             ILogger? logger = null)
         {
-            var options = new CarbonAwareOptions(() => new (dataProvider, null), location);
+            var services = new CarbonAwareServices(() => new (dataProvider, null), logger);
 
-            GlobalJobFilters.Filters.Add(options);
-            GlobalJobFilters.Filters.Add(new ShiftJobCarbonAwareFilter(logger));
+            GlobalJobFilters.Filters.Add(new ShiftJobCarbonAwareFilter(services, location));
             return configuration;
         }
 
@@ -28,10 +27,10 @@ namespace Hangfire
             ILogger? logger = null)
         {
             var o = configure.Invoke();
-            var options = new CarbonAwareOptions(() => new (o.DataProvider, null), o.Location);
+            var services = new CarbonAwareServices(() => new (o.DataProvider, null), logger);
 
-            GlobalJobFilters.Filters.Add(options);
-            GlobalJobFilters.Filters.Add(new ShiftJobCarbonAwareFilter(logger));
+            GlobalJobFilters.Filters.Add(services);
+            GlobalJobFilters.Filters.Add(new ShiftJobCarbonAwareFilter(services, o.Location));
             return configuration;
         }
 
@@ -44,7 +43,7 @@ namespace Hangfire
             IServiceProvider serviceProvider)
         {
             var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-            var options = new CarbonAwareOptions(() =>
+            var services = new CarbonAwareServices(() =>
             {
                 var scope = scopeFactory.CreateScope();
                 var dataProvider = scope.ServiceProvider.GetService<CarbonAwareDataProvider>();
@@ -54,10 +53,11 @@ namespace Hangfire
                     throw new ArgumentException($"No service of type {nameof(CarbonAwareDataProvider)} registered. Please register or pass {nameof(CarbonAwareDataProvider)} to UseCarbonAwareExecution.");
                 }
                 return new(dataProvider, scope);
-            }, location);
+            }, serviceProvider.GetService<ILogger<ShiftJobCarbonAwareFilter>>());
 
-            GlobalJobFilters.Filters.Add(options);
-            GlobalJobFilters.Filters.Add(new ShiftJobCarbonAwareFilter(serviceProvider.GetService<ILogger<ShiftJobCarbonAwareFilter>>()));
+            GlobalJobFilters.Filters.Add(
+                new ShiftJobCarbonAwareFilter(services, location)
+            );
             return configuration;
         }
     }
