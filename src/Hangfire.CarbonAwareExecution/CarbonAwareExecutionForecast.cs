@@ -13,7 +13,7 @@ public static class CarbonAwareExecutionForecastExtensions
         try
         {
             var bestExecutionTime = await provider.DataProvider.CalculateBestExecutionTime(location,
-                earliestExecutionTime, latestExecutionTime - estimatedJobDuration, estimatedJobDuration);
+                earliestExecutionTime, latestExecutionTime, estimatedJobDuration);
             return bestExecutionTime;
         }
         catch (Exception ex)
