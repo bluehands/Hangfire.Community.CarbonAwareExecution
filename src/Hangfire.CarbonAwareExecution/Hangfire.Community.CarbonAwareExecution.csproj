@@ -49,12 +49,12 @@
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="CarbonAwareComputing" Version="2.1.0" />
+		<PackageReference Include="CarbonAwareComputing" Version="2.1.1" />
 		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="FunicularSwitch.Generators" Version="4.2.0">
+		<PackageReference Include="FunicularSwitch.Generators" Version="4.2.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

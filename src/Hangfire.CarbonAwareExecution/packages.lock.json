@@ -4,9 +4,9 @@
     ".NETStandard,Version=v2.0": {
       "CarbonAwareComputing": {
         "type": "Direct",
-        "requested": "[2.1.0, )",
-        "resolved": "2.1.0",
-        "contentHash": "//95mPQqorCHIEoB1D8BaxFyUl3yXsDlKmAKZO69OhCF1hkAcxhoHmVnVSSRWVawK1do0ey+cKWfWruClS4KYg==",
+        "requested": "[2.1.1, )",
+        "resolved": "2.1.1",
+        "contentHash": "L4xdzQi0PGvD1YHwlGMC609KVqYUV7UyF8WDefZaMhlr0JK9hdYlu5PnUx3esrUW1baN/7ijj49xl+huBYoD2A==",
         "dependencies": {
           "Microsoft.Extensions.Caching.Abstractions": "6.0.0",
           "Microsoft.Extensions.Caching.Memory": "6.0.2",
@@ -22,9 +22,9 @@
       },
       "FunicularSwitch.Generators": {
         "type": "Direct",
-        "requested": "[4.2.0, )",
-        "resolved": "4.2.0",
-        "contentHash": "aauMhvVeiI8i/4aFsWnuzjqJxZgSxArS9iPka31pfp29Rrk3DCO1MlKTTVWYvGlikopcZbXRxlLrq6nTr7//tA==",
+        "requested": "[4.2.2, )",
+        "resolved": "4.2.2",
+        "contentHash": "iSptkv6jJLpmo8n5NH6zUiCUSlmEf/B3tt7tprOdy8DCQujsBhqVkvxu18YvP1Ke83rYoKiEquejQvmPYLbCsA==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Common": "4.6.0"
         }
