@@ -3,7 +3,7 @@ using Hangfire.Community.CarbonAwareExecution.Internal;
 
 namespace Hangfire.Community.CarbonAwareExecution;
 
-public class ShiftJobCarbonAwareFilter : ShiftJobFilter<CarbonAwareExecution>
+public class ShiftJobCarbonAwareFilter : ShiftJobFilter<CarbonAwareExecution, ShiftInfoJobParameter>
 {
     internal ShiftJobCarbonAwareFilter(CarbonAwareServices services, ComputingLocation location) 
         : base(delayParameter => GetUpdatedScheduleDate(delayParameter, location, services), services.Logger)
@@ -14,17 +14,23 @@ public class ShiftJobCarbonAwareFilter : ShiftJobFilter<CarbonAwareExecution>
     {
         var now = DateTimeOffset.Now;
 
-        return services
+        var shifted = services
             .GetBestScheduleTime(location, now, now.Add(execution.MaxExecutionDelay), execution.EstimatedJobDuration)
-            .GetAwaiter().GetResult()
-            .Match(
-                noForecast: _ => null,
-                bestExecutionTime: b =>
-                {
-                    var shiftTo = b.ExecutionTime.CropSeconds();
-                    return shiftTo - now < TimeSpan.FromMinutes(1)
-                        ? null
-                        : new ShiftedScheduleDate(shiftTo, "Rescheduled for optimized carbon footprint");
-                });
+            .GetAwaiter().GetResult();
+
+
+        if (shifted == null)
+            return null;
+        
+        var shiftToDate = shifted.ShiftedExecutionTime.Date;
+        var shiftTo = shiftToDate.CropSeconds();
+        if (shiftTo - now < TimeSpan.FromMinutes(1))
+            return null;
+        
+        return new(shiftTo, shifted);
     }
 }
+
+public record ShiftInfoJobParameter(ExecutionTime OriginalExecutionTime, ExecutionTime ShiftedExecutionTime);
+
+public record ExecutionTime(DateTimeOffset Date, double CarbonIntensity);

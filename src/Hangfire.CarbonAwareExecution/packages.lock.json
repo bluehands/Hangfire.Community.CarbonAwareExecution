@@ -4,9 +4,9 @@
     ".NETStandard,Version=v2.0": {
       "CarbonAwareComputing": {
         "type": "Direct",
-        "requested": "[2.1.1, )",
-        "resolved": "2.1.1",
-        "contentHash": "L4xdzQi0PGvD1YHwlGMC609KVqYUV7UyF8WDefZaMhlr0JK9hdYlu5PnUx3esrUW1baN/7ijj49xl+huBYoD2A==",
+        "requested": "[3.0.0-BestExectuionExtended-20250317.3, )",
+        "resolved": "3.0.0-BestExectuionExtended-20250317.3",
+        "contentHash": "R2onZXTK9r2xBElElXEoLx/Bt5hjbLj3BQRJ3djqg02Uzr71JIbg7C/ON6UEAJMdii2nvqJRcP+KhP4AqQ/c+Q==",
         "dependencies": {
           "Microsoft.Extensions.Caching.Abstractions": "6.0.0",
           "Microsoft.Extensions.Caching.Memory": "6.0.2",

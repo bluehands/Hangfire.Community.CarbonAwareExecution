@@ -1,18 +1,35 @@
-﻿using Hangfire.Community.CarbonAwareExecution.Internal;
+﻿using Hangfire.Common;
+using Hangfire.Community.CarbonAwareExecution.Internal;
+using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Hangfire.Community.CarbonAwareExecution;
 
-public sealed record ShiftedScheduleDate(DateTimeOffset Date, string? Reason);
-
-public class ShiftJobFilter<TParameter>(Func<TParameter, BackgroundJob, ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : IElectStateFilter
+public class ShiftJobFilter<TParameter> : ShiftJobFilter<TParameter, string>
 {
-    const string ShiftParameterName = "__Shift";
+    public ShiftJobFilter(Func<TParameter, ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : base(getShiftedScheduleDate, logger)
+    {
+    }
+
+    public ShiftJobFilter(Func<TParameter, BackgroundJob, ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : base(getShiftedScheduleDate, logger)
+    {
+    }
+}
+
+internal static class ShiftParameter
+{
+    public const string ParameterName = "__Shift";
+}
+
+public class ShiftJobFilter<TParameter, TJobParameter>(
+    Func<TParameter, BackgroundJob, ShiftJobFilter<TParameter, TJobParameter>.ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : IElectStateFilter
+{
+    public sealed record ShiftedScheduleDate(DateTimeOffset Date, TJobParameter? ShiftInfo);
 
     // ReSharper disable once NotAccessedPositionalProperty.Local
-    sealed record ShiftParameterValue(string Shift, string? Cron, string? TimeZone);
+    sealed record ShiftParameterValue(TJobParameter? ShiftInfo, string? Cron, string? TimeZone);
 
     public ShiftJobFilter(Func<TParameter, ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : this((parameter, _) => getShiftedScheduleDate(parameter), logger)
     {
@@ -28,7 +45,7 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, BackgroundJob, ShiftedS
         {
             logger.LogDebug(() => $"Found {delayParameter.GetType().Name} argument on job '{context.BackgroundJob.Id}: {delayParameter}'");
 
-            var shiftParameter = context.GetJobParameter<ShiftParameterValue>(ShiftParameterName);
+            var shiftParameter = context.GetJobParameter<ShiftParameterValue>(ShiftParameter.ParameterName);
             var recurringJobId = context.GetJobParameter<string>("RecurringJobId", true);
             if (recurringJobId != null)
             {
@@ -46,7 +63,6 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, BackgroundJob, ShiftedS
 
             if (shiftParameter == null) //not yet shifted -> calculate shift and reschedule
             {
-                var now = DateTimeOffset.Now;
                 var delayedScheduleTime = getShiftedScheduleDate(delayParameter, context.BackgroundJob);
 
                 if (delayedScheduleTime != null)
@@ -66,9 +82,9 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, BackgroundJob, ShiftedS
 
                     var scheduleTo = delayedScheduleTime.Date;
                     logger.LogDebug(() => $"Shifting job '{context.BackgroundJob.Id}' to new schedule date: {scheduleTo}.");
-                    context.SetJobParameter(ShiftParameterName,
+                    context.SetJobParameter(ShiftParameter.ParameterName,
                         new ShiftParameterValue(
-                            Shift: $@"{(scheduleTo - now):hh\:mm\:ss}{(delayedScheduleTime.Reason != null ? $" - {delayedScheduleTime.Reason}" : "")}",
+                            ShiftInfo: delayedScheduleTime.ShiftInfo,
                             Cron: recurringJobCron, 
                             TimeZone: recurringJobTimeZone)
                     );
@@ -103,5 +119,18 @@ public class ShiftJobFilter<TParameter>(Func<TParameter, BackgroundJob, ShiftedS
                 }
             );
         return parentJobDeletedOrChanged;
+    }
+}
+
+public static class BackgroundJobExtension
+{
+    public static T? GetShiftParameter<T>(this PerformContext performContext) => performContext.BackgroundJob.GetShiftParameter<T>();
+
+    public static T? GetShiftParameter<T>(this BackgroundJob background)
+    {
+        if (!background.ParametersSnapshot.TryGetValue(ShiftParameter.ParameterName, out var stringValue))
+            return default;
+
+        return SerializationHelper.Deserialize<T>(stringValue, SerializationOption.User);
     }
 }

@@ -1,6 +1,7 @@
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.Community.CarbonAwareExecution;
+using Hangfire.Server;
 using Microsoft.AspNetCore.Mvc;
 using static Hangfire.Community.CarbonAwareExecution.CarbonAwareExecution;
 
@@ -17,33 +18,35 @@ namespace Usage.Controllers
             backgroundJobs.Enqueue(
                 () => HangfireActions.CarbonAwareJob(
                     "Hello world from Hangfire! Enqueue carbon aware jobs.",
-                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
-                ));
+                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5)),
+                    null)
+            );
 
             backgroundJobs.Enqueue(
                 () => HangfireActions.MyJob(
                     "Hello world from Hangfire! Enqueue carbon aware jobs",
-                    ShiftCarbonAware(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+                    ShiftCarbonAware(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5)),
+                    null
                 ));
 
             BackgroundJob.Schedule(
                 () => HangfireActions.CarbonAwareJob(
                     "Hello world from Hangfire! Schedule carbon aware jobs",
-                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5)), null),
                 TimeSpan.FromMinutes(20));
 
             var earliestExecutionTime = DateTimeOffset.Now + TimeSpan.FromHours(1);
             backgroundJobs.Schedule(
                 () => HangfireActions.MyJob(
                     "Hello world from Hangfire! Schedule carbon aware jobs",
-                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+                    new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5)), null),
                 earliestExecutionTime);
 
             //every night between 2 and 5 am
             RecurringJob.AddOrUpdate(
                 "CarbonAwareJob",
                 () => HangfireActions.MyJob("Hello world from Hangfire! Recurring carbon aware jobs",
-                    new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5))),
+                    new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5)), null),
                 "2 0 * * *"
             );
             return Ok();
@@ -59,7 +62,8 @@ namespace Usage.Controllers
 
             var job = Job.FromExpression(() => HangfireActions.MyJob(
                 "Recurring job with potential carbon delay",
-                new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)
+                new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration),
+                null
             ), queue);
 
             recurringJobs.AddOrUpdate(jobId, job, cronExpression);
@@ -71,7 +75,7 @@ namespace Usage.Controllers
         [HttpPost]
         public IActionResult AddOrUpdatedRecurringJob(string jobId, string cronExpression)
         {
-            recurringJobs.AddOrUpdate(jobId, () => HangfireActions.MyJob("Recurring job with carbon aware delay", null), cronExpression);
+            recurringJobs.AddOrUpdate(jobId, () => HangfireActions.MyJob("Recurring job with carbon aware delay", null, null), cronExpression);
             return Ok();
         }
 
@@ -84,7 +88,7 @@ namespace Usage.Controllers
             var latestDelay = TimeSpan.FromHours(maxExecutionDelayHours);
             var estimatedJobDuration = TimeSpan.FromMinutes(estimatedJobDurationMinutes);
             var scheduledJobId = backgroundJobs
-                .Schedule(() => HangfireActions.MyJob("Scheduled job with carbon aware delay", new CarbonAwareExecution(latestDelay, estimatedJobDuration)), delay);
+                .Schedule(() => HangfireActions.MyJob("Scheduled job with carbon aware delay", new CarbonAwareExecution(latestDelay, estimatedJobDuration), null), delay);
 
             return Ok(scheduledJobId);
         }
@@ -94,7 +98,7 @@ namespace Usage.Controllers
         public IActionResult ScheduleJob(string? delayTimeSpan)
         {
             var delay = delayTimeSpan != null ? TimeSpan.Parse(delayTimeSpan) : TimeSpan.Zero;
-            var scheduledJobId = backgroundJobs.Schedule(() => HangfireActions.MyJob("Scheduled job without carbon aware delay", null), delay);
+            var scheduledJobId = backgroundJobs.Schedule(() => HangfireActions.MyJob("Scheduled job without carbon aware delay", null, null), delay);
             return Ok(scheduledJobId);
         }
 
@@ -104,7 +108,7 @@ namespace Usage.Controllers
         {
             var maxExecutionDelay = TimeSpan.FromHours(maxExecutionDelayHours);
             var estimatedJobDuration = TimeSpan.FromMinutes(estimatedJobDurationMinutes);
-            var jobId = backgroundJobs.Enqueue(() => HangfireActions.MyJob("Enqueued job with carbon aware delay", new(maxExecutionDelay, estimatedJobDuration)));
+            var jobId = backgroundJobs.Enqueue(() => HangfireActions.MyJob("Enqueued job with carbon aware delay", new(maxExecutionDelay, estimatedJobDuration), null));
             return Ok(jobId);
         }
 
@@ -112,7 +116,7 @@ namespace Usage.Controllers
         [HttpPost]
         public IActionResult EnqueueJob()
         {
-            var jobId = backgroundJobs.Enqueue(() => HangfireActions.MyJob("Enqueued job without carbon aware delay", null));
+            var jobId = backgroundJobs.Enqueue(() => HangfireActions.MyJob("Enqueued job without carbon aware delay", null, null));
             return Ok(jobId);
         }
     }
@@ -120,11 +124,26 @@ namespace Usage.Controllers
     public static class HangfireActions
     {
         // ReSharper disable UnusedParameter.Global
-        public static void CarbonAwareJob(string info, CarbonAwareExecution? carbonDelay) => Console.WriteLine(info);
-        public static async Task MyJob(string info, CarbonAwareExecution? carbonDelay)
+        public static void CarbonAwareJob(string info, CarbonAwareExecution? carbonDelay, /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
+        {
+            var shiftInfo = GetShiftInfo(performContext);
+            Console.WriteLine(info + shiftInfo);
+        }
+
+        static string? GetShiftInfo(PerformContext? performContext)
+        {
+            var shiftParameter = performContext?.GetShiftParameter<ShiftInfoJobParameter>();
+            var shiftInfo = shiftParameter != null
+                ? $" Shifted from {shiftParameter.OriginalExecutionTime.Date} with carbon intensity {shiftParameter.OriginalExecutionTime.CarbonIntensity} to {shiftParameter.ShiftedExecutionTime.Date} with carbon intensity {shiftParameter.ShiftedExecutionTime.CarbonIntensity}"
+                : null;
+            return shiftInfo;
+        }
+
+        public static async Task MyJob(string info, CarbonAwareExecution? carbonDelay, /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
         {
             await Task.Delay(100);
-            Console.WriteLine(info);
+            var shiftInfo = GetShiftInfo(performContext);
+            Console.WriteLine(info + shiftInfo);
         }
         // ReSharper restore UnusedParameter.Global
     }

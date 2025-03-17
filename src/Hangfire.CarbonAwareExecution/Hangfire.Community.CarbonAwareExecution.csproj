@@ -17,7 +17,7 @@
 
 		<!--#region adapt versions here-->
 		<MajorVersion>2</MajorVersion>
-		<MinorAndPatchVersion>2.1</MinorAndPatchVersion>
+		<MinorAndPatchVersion>3.0</MinorAndPatchVersion>
 		<!--#endregion-->
 
 		<AssemblyVersion>$(MajorVersion).0.0</AssemblyVersion>
@@ -49,7 +49,7 @@
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="CarbonAwareComputing" Version="2.1.1" />
+		<PackageReference Include="CarbonAwareComputing" Version="3.0.0-BestExectuionExtended-20250317.3" />
 		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
