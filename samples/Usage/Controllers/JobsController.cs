@@ -129,13 +129,13 @@ namespace Usage.Controllers
             CarbonAwareExecution? carbonDelay, 
             /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
         {
-            var shiftInfo = GetShiftInfo(performContext);
+            var shiftInfo = GetShiftInfo(performContext, carbonDelay);
             Console.WriteLine(info + shiftInfo);
         }
 
-        static string? GetShiftInfo(PerformContext? performContext)
+        static string? GetShiftInfo(PerformContext? performContext, CarbonAwareExecution? carbonDelay)
         {
-            var shiftParameter = performContext?.GetShiftParameter<ShiftInfoJobParameter>();
+            var shiftParameter = carbonDelay != null ? performContext?.GetShiftParameter<ShiftInfoJobParameter>() : null;
             var shiftInfo = shiftParameter != null
                 ? $" Shifted from {shiftParameter.OriginalExecutionTime.Date} with carbon intensity {Math.Round(shiftParameter.OriginalExecutionTime.CarbonIntensity, 1)} to {shiftParameter.ShiftedExecutionTime.Date} with carbon intensity {Math.Round(shiftParameter.ShiftedExecutionTime.CarbonIntensity, 1)}"
                 : null;
@@ -148,7 +148,7 @@ namespace Usage.Controllers
             /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
         {
             await Task.Delay(100);
-            var shiftInfo = GetShiftInfo(performContext);
+            var shiftInfo = GetShiftInfo(performContext, carbonDelay);
             Console.WriteLine(info + shiftInfo);
         }
         // ReSharper restore UnusedParameter.Global

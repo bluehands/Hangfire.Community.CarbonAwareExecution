@@ -1,5 +1,4 @@
-﻿using Hangfire.Common;
-using Hangfire.Community.CarbonAwareExecution.Internal;
+﻿using Hangfire.Community.CarbonAwareExecution.Internal;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -123,13 +122,9 @@ public class ShiftJobFilter<TParameter, TJobParameter>(
 
 public static class BackgroundJobExtension
 {
-    public static T? GetShiftParameter<T>(this PerformContext performContext) => performContext.BackgroundJob.GetShiftParameter<T>();
-
-    public static T? GetShiftParameter<T>(this BackgroundJob background)
+    public static T? GetShiftParameter<T>(this PerformContext performContext)
     {
-        if (!background.ParametersSnapshot.TryGetValue(ShiftParameter.ParameterName, out var stringValue))
-            return default;
-
-        return SerializationHelper.Deserialize<ShiftParameterValue<T>>(stringValue, SerializationOption.User).ShiftInfo;
+        var parameter = performContext.GetJobParameter<ShiftParameterValue<T>>(ShiftParameter.ParameterName, true);
+        return parameter != null ? parameter.ShiftInfo : default;
     }
 }
