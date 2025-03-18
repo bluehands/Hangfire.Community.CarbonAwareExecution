@@ -31,6 +31,6 @@ public class ShiftJobCarbonAwareFilter : ShiftJobFilter<CarbonAwareExecution, Sh
     }
 }
 
-public record ShiftInfoJobParameter(ExecutionTime OriginalExecutionTime, ExecutionTime ShiftedExecutionTime);
+public record ShiftInfoJobParameter(ExecutionTimeWithIntensity OriginalExecutionTime, ExecutionTimeWithIntensity ShiftedExecutionTime);
 
-public record ExecutionTime(DateTimeOffset Date, double CarbonIntensity);
+public record ExecutionTimeWithIntensity(DateTimeOffset Date, double CarbonIntensity);

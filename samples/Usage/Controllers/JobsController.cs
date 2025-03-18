@@ -124,7 +124,10 @@ namespace Usage.Controllers
     public static class HangfireActions
     {
         // ReSharper disable UnusedParameter.Global
-        public static void CarbonAwareJob(string info, CarbonAwareExecution? carbonDelay, /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
+        public static void CarbonAwareJob(
+            string info, 
+            CarbonAwareExecution? carbonDelay, 
+            /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
         {
             var shiftInfo = GetShiftInfo(performContext);
             Console.WriteLine(info + shiftInfo);
@@ -139,7 +142,10 @@ namespace Usage.Controllers
             return shiftInfo;
         }
 
-        public static async Task MyJob(string info, CarbonAwareExecution? carbonDelay, /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
+        public static async Task MyJob(
+            string info,
+            CarbonAwareExecution? carbonDelay, 
+            /*optional, provided by hangfire, you can access information about shift here */ PerformContext? performContext)
         {
             await Task.Delay(100);
             var shiftInfo = GetShiftInfo(performContext);
