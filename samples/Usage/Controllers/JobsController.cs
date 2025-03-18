@@ -137,7 +137,7 @@ namespace Usage.Controllers
         {
             var shiftParameter = performContext?.GetShiftParameter<ShiftInfoJobParameter>();
             var shiftInfo = shiftParameter != null
-                ? $" Shifted from {shiftParameter.OriginalExecutionTime.Date} with carbon intensity {shiftParameter.OriginalExecutionTime.CarbonIntensity} to {shiftParameter.ShiftedExecutionTime.Date} with carbon intensity {shiftParameter.ShiftedExecutionTime.CarbonIntensity}"
+                ? $" Shifted from {shiftParameter.OriginalExecutionTime.Date} with carbon intensity {Math.Round(shiftParameter.OriginalExecutionTime.CarbonIntensity, 1)} to {shiftParameter.ShiftedExecutionTime.Date} with carbon intensity {Math.Round(shiftParameter.ShiftedExecutionTime.CarbonIntensity, 1)}"
                 : null;
             return shiftInfo;
         }

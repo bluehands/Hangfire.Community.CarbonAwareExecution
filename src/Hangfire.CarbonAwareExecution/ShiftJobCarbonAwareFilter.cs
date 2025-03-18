@@ -18,7 +18,6 @@ public class ShiftJobCarbonAwareFilter : ShiftJobFilter<CarbonAwareExecution, Sh
             .GetBestScheduleTime(location, now, now.Add(execution.MaxExecutionDelay), execution.EstimatedJobDuration)
             .GetAwaiter().GetResult();
 
-
         if (shifted == null)
             return null;
         
@@ -26,7 +25,7 @@ public class ShiftJobCarbonAwareFilter : ShiftJobFilter<CarbonAwareExecution, Sh
         var shiftTo = shiftToDate.CropSeconds();
         if (shiftTo - now < TimeSpan.FromMinutes(1))
             return null;
-        
+
         return new(shiftTo, shifted);
     }
 }

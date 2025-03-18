@@ -23,13 +23,12 @@ internal static class ShiftParameter
     public const string ParameterName = "__Shift";
 }
 
+internal sealed record ShiftParameterValue<TJobParameter>(TJobParameter? ShiftInfo, string? Cron, string? TimeZone);
+
 public class ShiftJobFilter<TParameter, TJobParameter>(
     Func<TParameter, BackgroundJob, ShiftJobFilter<TParameter, TJobParameter>.ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : IElectStateFilter
 {
     public sealed record ShiftedScheduleDate(DateTimeOffset Date, TJobParameter? ShiftInfo);
-
-    // ReSharper disable once NotAccessedPositionalProperty.Local
-    sealed record ShiftParameterValue(TJobParameter? ShiftInfo, string? Cron, string? TimeZone);
 
     public ShiftJobFilter(Func<TParameter, ShiftedScheduleDate?> getShiftedScheduleDate, ILogger? logger = null) : this((parameter, _) => getShiftedScheduleDate(parameter), logger)
     {
@@ -45,7 +44,7 @@ public class ShiftJobFilter<TParameter, TJobParameter>(
         {
             logger.LogDebug(() => $"Found {delayParameter.GetType().Name} argument on job '{context.BackgroundJob.Id}: {delayParameter}'");
 
-            var shiftParameter = context.GetJobParameter<ShiftParameterValue>(ShiftParameter.ParameterName);
+            var shiftParameter = context.GetJobParameter<ShiftParameterValue<TJobParameter>>(ShiftParameter.ParameterName);
             var recurringJobId = context.GetJobParameter<string>("RecurringJobId", true);
             if (recurringJobId != null)
             {
@@ -83,7 +82,7 @@ public class ShiftJobFilter<TParameter, TJobParameter>(
                     var scheduleTo = delayedScheduleTime.Date;
                     logger.LogDebug(() => $"Shifting job '{context.BackgroundJob.Id}' to new schedule date: {scheduleTo}.");
                     context.SetJobParameter(ShiftParameter.ParameterName,
-                        new ShiftParameterValue(
+                        new ShiftParameterValue<TJobParameter>(
                             ShiftInfo: delayedScheduleTime.ShiftInfo,
                             Cron: recurringJobCron, 
                             TimeZone: recurringJobTimeZone)
@@ -95,7 +94,7 @@ public class ShiftJobFilter<TParameter, TJobParameter>(
     }
 
     static bool ParentJobDeletedOrChanged(ElectStateContext context, string recurringJobId,
-        ShiftParameterValue shiftParameter)
+        ShiftParameterValue<TJobParameter> shiftParameter)
     {
         var parentJobDeletedOrChanged = context.Connection
             .GetRecurringJob(recurringJobId)
@@ -131,6 +130,6 @@ public static class BackgroundJobExtension
         if (!background.ParametersSnapshot.TryGetValue(ShiftParameter.ParameterName, out var stringValue))
             return default;
 
-        return SerializationHelper.Deserialize<T>(stringValue, SerializationOption.User);
+        return SerializationHelper.Deserialize<ShiftParameterValue<T>>(stringValue, SerializationOption.User).ShiftInfo;
     }
 }
