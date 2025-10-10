@@ -2,7 +2,8 @@
   "profiles": {
     "SampleUsage": {
       "commandName": "Project",
-      "launchUrl": "hangfire",
+      "launchBrowser": true,
+      "launchUrl": "swagger/index.html",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

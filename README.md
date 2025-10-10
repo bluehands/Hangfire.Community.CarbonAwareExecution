@@ -37,19 +37,22 @@ public static class HangfireActions
 Setup maximum delay and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is enqueued immediately.
 
 ``` csharp
+var maxExecutionDelay = TimeSpan.FromHours(2);
+var estimatedJobDuration = TimeSpan.FromMinutes(10);
+
 //use the extension methods
 IBackgroundJobClient client = GetBackgroundJobClient();
 client.Enqueue(
     () => HangfireActions.CarbonAwareJob(
         "Hello world from Hangfire!. Enqueue carbon aware jobs.",
-        new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+        new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)
 ));
 
 //or use the static versions
 BackgroundJob.Enqueue(
     () => HangfireActions.CarbonAwareJob(
         "Hello world from Hangfire!. Enqueue carbon aware jobs.",
-        new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))
+        new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)
 ));    
 ```
 
@@ -58,12 +61,15 @@ BackgroundJob.Enqueue(
 Setup the earliest execution time, the maximum delay and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is scheduled as desired.
 
 ``` csharp
+var maxExecutionDelay = TimeSpan.FromHours(2);
+var estimatedJobDuration = TimeSpan.FromMinutes(10);
+
 //use the extension methods
 IBackgroundJobClient client = GetBackgroundJobClient();
 client.Schedule(
     () => HangfireActions.CarbonAwareJob(
             "Hello world from Hangfire!. Schedule carbon aware jobs",
-            new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+            new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)),
         TimeSpan.FromMinutes(20)
 );
 
@@ -71,7 +77,7 @@ client.Schedule(
 BackgroudJob.Schedule(
     () => HangfireActions.CarbonAwareJob(
             "Hello world from Hangfire!. Schedule carbon aware jobs",
-            new CarbonAwareExecution(TimeSpan.FromHours(2), TimeSpan.FromMinutes(5))),
+            new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)),
         TimeSpan.FromMinutes(20)
 );
 ```
@@ -81,12 +87,15 @@ BackgroudJob.Schedule(
 Setup the maximum execution delay after planned schedule time and the estimated task duration. The extension will do a best effort to get a window with the estimated task duration and minimal grid carbon intensity. When no window can be detected, the task is scheduled as desired.
 
 ``` csharp
+var maxExecutionDelay = TimeSpan.FromHours(3);
+var estimatedJobDuration = TimeSpan.FromMinutes(10);
+
 //use the extension methods
 IRecurringJobManager manager = GetRecurringJobManager();
 manager.AddOrUpdate(
     "daily",
     () => HangfireActions.CarbonAwareJobAsync("Hello world from Hangfire!. Recurring carbon aware jobs",
-        new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5))),
+        new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)),
     "2 0 * * *"
 );
 
@@ -94,7 +103,7 @@ manager.AddOrUpdate(
 RecurringJob.AddOrUpdate(
     "daily",
     () => HangfireActions.CarbonAwareJobAsync("Hello world from Hangfire!. Recurring carbon aware jobs",
-        new CarbonAwareExecution(TimeSpan.FromHours(3), TimeSpan.FromMinutes(5))),
+        new CarbonAwareExecution(maxExecutionDelay, estimatedJobDuration)),
     "2 0 * * *"
 );
 ```

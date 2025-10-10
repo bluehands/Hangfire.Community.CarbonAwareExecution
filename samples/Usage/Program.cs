@@ -4,6 +4,7 @@ using Hangfire.Community.CarbonAwareExecution;
 using Hangfire.SqlServer;
 using Hangfire.Storage.SQLite;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Usage.Controllers;
 
 namespace Usage
 {
@@ -45,7 +46,7 @@ namespace Usage
 
             builder.Services.AddControllers();
 
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c => c.IncludeXmlComments(typeof(JobsController).Assembly));
 
             var app = builder.Build();
 
